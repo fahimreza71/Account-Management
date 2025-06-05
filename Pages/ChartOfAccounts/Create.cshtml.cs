@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using System.ComponentModel.DataAnnotations;
 
@@ -19,6 +20,7 @@ namespace AccMgt.Pages.ChartOfAccounts
 
         [BindProperty]
         public InputModel Input { get; set; }
+        public List<SelectListItem> ParentAccounts { get; set; } = new List<SelectListItem>();
 
         public class InputModel
         {
@@ -31,9 +33,33 @@ namespace AccMgt.Pages.ChartOfAccounts
 
             [Display(Name = "Is Active")]
             public bool IsActive { get; set; } = true;
+
         }
-        public void OnGet()
+        public async Task OnGetAsync()
         {
+            ParentAccounts.Add(new SelectListItem { Text = "Main Account", Value = "" });
+
+            var userId = _userManager.GetUserId(User);
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (SqlCommand cmd = new SqlCommand("sp_ManageChartOfAccounts", conn))
+            {
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Action", "GET_ALL");
+
+                conn.Open();
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        ParentAccounts.Add(new SelectListItem
+                        {
+                            Value = reader["Id"].ToString(),
+                            Text = $"{reader["Id"]} - {reader["AccountName"]}"
+                        });
+                    }
+                }
+            }
         }
         public async Task<IActionResult> OnPostAsync()
         {
@@ -58,7 +84,7 @@ namespace AccMgt.Pages.ChartOfAccounts
                 }
             }
 
-            return RedirectToPage("/ChartOfAccounts/Index"); // Or wherever you list accounts
+            return RedirectToPage("/ChartOfAccounts/Index");
         }
 
     }
