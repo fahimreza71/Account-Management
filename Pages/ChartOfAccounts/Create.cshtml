@@ -1,4 +1,28 @@
 ﻿@page
 @model AccMgt.Pages.ChartOfAccounts.CreateModel
 @{
+    ViewData["Title"] = "Add Account";
+}
+
+<h2>Add New Account</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Input.AccountName" class="form-label"></label>
+        <input asp-for="Input.AccountName" class="form-control" />
+        <span asp-validation-for="Input.AccountName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ParentAccountId" class="form-label"></label>
+        <select asp-for="Input.ParentAccountId" class="form-select" asp-items="Model.ParentAccounts"></select>
+        <span asp-validation-for="Input.ParentAccountId" class="text-danger"></span>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }
