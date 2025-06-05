@@ -1,0 +1,26 @@
+﻿@page
+@model IndexModel
+
+<h2>Chart of Accounts</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Account Name</th>
+            <th>Parent Account ID</th>
+            <th>Is Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var account in Model.Accounts)
+        {
+            <tr>
+                <td>@account.Id</td>
+                <td>@account.AccountName</td>
+                <td>@(account.ParentAccountId?.ToString() ?? "Main")</td>
+                <td>@(account.IsActive ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>
