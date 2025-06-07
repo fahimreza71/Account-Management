@@ -1,0 +1,37 @@
+﻿@page "{id:int}"
+@model EditModel
+@{
+    ViewData["Title"] = "Edit Account";
+}
+
+<h3>Edit Account</h3>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Account.AccountName" class="form-label"></label>
+        <input asp-for="Account.AccountName" class="form-control" />
+        <span asp-validation-for="Account.AccountName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Account.ParentAccountId" class="form-label"></label>
+        <select asp-for="Account.ParentAccountId" class="form-select">
+            <option value="">Main Account</option>
+            @foreach (var item in Model.ParentAccounts)
+            {
+                <option value="@item.Id" selected="@(item.Id == Model.Account.ParentAccountId)">
+                    @item.AccountName (@item.Id)
+                </option>
+            }
+        </select>
+        <span asp-validation-for="Account.ParentAccountId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input asp-for="Account.IsActive" class="form-check-input" />
+        <label asp-for="Account.IsActive" class="form-check-label"></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a asp-page="./Index" class="btn btn-secondary">Back</a>
+</form>

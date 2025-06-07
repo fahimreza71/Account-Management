@@ -10,6 +10,7 @@
             <th>Account Name</th>
             <th>Parent Account ID</th>
             <th>Is Active</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -20,6 +21,11 @@
                 <td>@account.AccountName</td>
                 <td>@(account.ParentAccountId?.ToString() ?? "Main")</td>
                 <td>@(account.IsActive ? "Yes" : "No")</td>
+                <td>
+                    <a asp-page="/ChartOfAccounts/Edit" asp-route-id="@account.Id" class="btn btn-primary">Edit</a>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@account.Id" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
             </tr>
         }
     </tbody>
