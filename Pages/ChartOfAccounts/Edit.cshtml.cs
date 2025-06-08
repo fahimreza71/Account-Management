@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 
 namespace AccMgt.Pages.ChartOfAccounts
@@ -8,15 +11,19 @@ namespace AccMgt.Pages.ChartOfAccounts
     public class EditModel : PageModel
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public EditModel(IConfiguration configuration)
+        public EditModel(IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
+
         }
 
         public class ChartOfAccountInput
         {
             public int Id { get; set; }
+            [Required]
             public string AccountName { get; set; }
             public int? ParentAccountId { get; set; }
             public bool IsActive { get; set; }
@@ -25,10 +32,10 @@ namespace AccMgt.Pages.ChartOfAccounts
         [BindProperty]
         public ChartOfAccountInput Account { get; set; }
 
-        public List<ChartOfAccountInput> ParentAccounts { get; set; }
+        public List<SelectListItem> ParentAccounts { get; set; }
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
             using SqlConnection conn = new(connectionString);
             using SqlCommand cmd = new("sp_ManageChartOfAccounts", conn)
             {
@@ -40,21 +47,27 @@ namespace AccMgt.Pages.ChartOfAccounts
 
             await conn.OpenAsync();
             using var reader = await cmd.ExecuteReaderAsync();
+
+
             if (await reader.ReadAsync())
             {
                 Account = new ChartOfAccountInput
                 {
                     Id = (int)reader["Id"],
-                    AccountName = reader["AccountName"].ToString(),
+                    AccountName = reader["AccountName"].ToString()!,
                     ParentAccountId = reader["ParentAccountId"] as int?,
                     IsActive = (bool)reader["IsActive"]
                 };
             }
+            else
+            {
+                await conn.CloseAsync();
+                return NotFound();
+            }
 
             await conn.CloseAsync();
 
-            // Load list for dropdown
-            ParentAccounts = await LoadParentAccounts(connectionString, id);
+            ParentAccounts = await LoadParentAccounts(connectionString!, id);
             return Page();
         }
 
@@ -83,9 +96,13 @@ namespace AccMgt.Pages.ChartOfAccounts
             return RedirectToPage("./Index");
         }
 
-        private async Task<List<ChartOfAccountInput>> LoadParentAccounts(string connectionString, int currentId)
+        private async Task<List<SelectListItem>> LoadParentAccounts(string connectionString, int currentAccountId)
         {
-            List<ChartOfAccountInput> list = new();
+            List<SelectListItem> list = new()
+    {
+        new SelectListItem { Text = "Main Account", Value = "" }
+    };
+
             using SqlConnection conn = new(connectionString);
             using SqlCommand cmd = new("sp_ManageChartOfAccounts", conn)
             {
@@ -95,21 +112,26 @@ namespace AccMgt.Pages.ChartOfAccounts
             cmd.Parameters.AddWithValue("@Action", "GET_ALL");
 
             await conn.OpenAsync();
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
             {
-                int id = (int)reader["Id"];
-                if (id != currentId)
+                while (await reader.ReadAsync())
                 {
-                    list.Add(new ChartOfAccountInput
+                    int id = Convert.ToInt32(reader["Id"]);
+                    string accountName = reader["AccountName"].ToString();
+
+                    if (id == currentAccountId)
+                        continue;
+
+                    list.Add(new SelectListItem
                     {
-                        Id = id,
-                        AccountName = reader["AccountName"].ToString()
+                        Value = id.ToString(),
+                        Text = $"{id} - {accountName}"
                     });
                 }
             }
-            await conn.CloseAsync();
+
             return list;
         }
+
     }
 }

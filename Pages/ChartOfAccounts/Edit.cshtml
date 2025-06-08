@@ -7,6 +7,7 @@
 <h3>Edit Account</h3>
 
 <form method="post">
+    <input type="hidden" asp-for="Account.Id" />
     <div class="mb-3">
         <label asp-for="Account.AccountName" class="form-label"></label>
         <input asp-for="Account.AccountName" class="form-control" />
@@ -15,15 +16,7 @@
 
     <div class="mb-3">
         <label asp-for="Account.ParentAccountId" class="form-label"></label>
-        <select asp-for="Account.ParentAccountId" class="form-select">
-            <option value="">Main Account</option>
-            @foreach (var item in Model.ParentAccounts)
-            {
-                <option value="@item.Id" selected="@(item.Id == Model.Account.ParentAccountId)">
-                    @item.AccountName (@item.Id)
-                </option>
-            }
-        </select>
+        <select asp-for="Account.ParentAccountId" class="form-select" asp-items="Model.ParentAccounts"></select>        
         <span asp-validation-for="Account.ParentAccountId" class="text-danger"></span>
     </div>
 
