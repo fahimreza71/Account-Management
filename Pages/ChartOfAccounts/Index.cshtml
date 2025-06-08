@@ -23,9 +23,10 @@
                 <td>@(account.IsActive ? "Yes" : "No")</td>
                 <td>
                     <a asp-page="/ChartOfAccounts/Edit" asp-route-id="@account.Id" class="btn btn-primary">Edit</a>
-                    <form method="post" asp-page-handler="Delete" asp-route-id="@account.Id" class="d-inline">
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@account.Id" onsubmit="return confirm('Are you sure you want to delete this account?');" class="d-inline">
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
+                </td>
             </tr>
         }
     </tbody>

@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace AccMgt.Pages.ChartOfAccounts
 {
@@ -15,7 +17,7 @@ namespace AccMgt.Pages.ChartOfAccounts
         public class AccountViewModel
         {
             public int Id { get; set; }
-            public string AccountName { get; set; }
+            public string? AccountName { get; set; }
             public int? ParentAccountId { get; set; }
             public bool IsActive { get; set; }
         }
@@ -43,6 +45,26 @@ namespace AccMgt.Pages.ChartOfAccounts
                     }
                 }
             }
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+
+            string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
+            using SqlConnection conn = new(connectionString);
+            using SqlCommand cmd = new("sp_ManageChartOfAccounts", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@Action", "DELETE");
+            cmd.Parameters.AddWithValue("@Id", id);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+            await conn.CloseAsync();
+
+            return RedirectToPage("Index");
         }
     }
 }
