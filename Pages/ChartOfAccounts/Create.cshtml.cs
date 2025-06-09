@@ -1,12 +1,16 @@
+using AccMgt.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace AccMgt.Pages.ChartOfAccounts
 {
+    [Authorize(Roles = "Admin,Accountant")]
     public class CreateModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -21,6 +25,7 @@ namespace AccMgt.Pages.ChartOfAccounts
         [BindProperty]
         public InputModel Input { get; set; }
         public List<SelectListItem> ParentAccounts { get; set; } = new List<SelectListItem>();
+        public List<SelectListItem> UsersList { get; set; } = new List<SelectListItem>();
 
         public class InputModel
         {
@@ -33,13 +38,21 @@ namespace AccMgt.Pages.ChartOfAccounts
 
             [Display(Name = "Is Active")]
             public bool IsActive { get; set; } = true;
-
+            [Required]
+            public string UserId { get; set; }
         }
         public async Task OnGetAsync()
         {
             ParentAccounts.Add(new SelectListItem { Text = "Main Account", Value = "" });
 
             var userId = _userManager.GetUserId(User);
+            var users = await _userManager.Users.ToListAsync();
+
+            UsersList = users.Select(u => new SelectListItem
+            {
+                Value = u.Id,
+                Text = u.Email
+            }).ToList();
 
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             using (SqlCommand cmd = new SqlCommand("sp_ManageChartOfAccounts", conn))
@@ -77,7 +90,7 @@ namespace AccMgt.Pages.ChartOfAccounts
                     cmd.Parameters.AddWithValue("@AccountName", Input.AccountName);
                     cmd.Parameters.AddWithValue("@ParentAccountId", (object?)Input.ParentAccountId ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", Input.IsActive);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@UserId", Input.UserId);
 
                     conn.Open();
                     await cmd.ExecuteNonQueryAsync();
