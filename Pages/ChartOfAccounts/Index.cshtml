@@ -10,6 +10,7 @@
             <th>Account Name</th>
             <th>Parent Account ID</th>
             <th>Is Active</th>
+            <th>Balance</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -21,11 +22,18 @@
                 <td>@account.AccountName</td>
                 <td>@(account.ParentAccountId?.ToString() ?? "Main")</td>
                 <td>@(account.IsActive ? "Yes" : "No")</td>
+                <td>@account.Balance.ToString("N2")</td>
                 <td>
-                    <a asp-page="/ChartOfAccounts/Edit" asp-route-id="@account.Id" class="btn btn-primary">Edit</a>
-                    <form method="post" asp-page-handler="Delete" asp-route-id="@account.Id" onsubmit="return confirm('Are you sure you want to delete this account?');" class="d-inline">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Accountant"))
+                    {
+                        <a asp-page="/ChartOfAccounts/Edit" asp-route-id="@account.Id" class="btn btn-primary">Edit</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@account.Id" onsubmit="return confirm('Are you sure you want to delete this account?');" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    }
+                    <a asp-page="/Vouchers/Index" asp-route-accountId="@account.Id" class="btn d-inline btn-info">
+                        Vouchers
+                    </a>
                 </td>
             </tr>
         }
