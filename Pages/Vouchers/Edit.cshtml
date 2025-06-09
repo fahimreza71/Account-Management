@@ -1,0 +1,48 @@
+﻿@page "{id:int}"
+@model EditModel
+@{
+    ViewData["Title"] = "Edit Voucher";
+}
+
+<h2>Edit Voucher</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Voucher.VoucherId" />
+
+    <div class="mb-3">
+        <label asp-for="Voucher.VoucherType" class="form-label"></label>
+        <select asp-for="Voucher.VoucherType" class="form-select" asp-items="Model.VoucherTypes"></select>
+        <span asp-validation-for="Voucher.VoucherType" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Account</label>
+        <select asp-for="Voucher.AccountId" class="form-select" asp-items="Model.Accounts" disabled></select>
+        <input type="hidden" asp-for="Voucher.AccountId" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Voucher.Debit" class="form-label"></label>
+        <input asp-for="Voucher.Debit" class="form-control" />
+        <span asp-validation-for="Voucher.Debit" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Voucher.Credit" class="form-label"></label>
+        <input asp-for="Voucher.Credit" class="form-control" />
+        <span asp-validation-for="Voucher.Credit" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Voucher.Narration" class="form-label"></label>
+        <textarea asp-for="Voucher.Narration" class="form-control"></textarea>
+        <span asp-validation-for="Voucher.Narration" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a asp-page="/Vouchers/Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
