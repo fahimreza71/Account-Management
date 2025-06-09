@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using AccMgt.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using TaskTracker.Services;
+using Microsoft.CodeAnalysis.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,11 +11,17 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
+    options.LogoutPath = $"/Identity/Account/Logout";
+    options.LoginPath = $"/Identity/Account/Login";
+});
 
 var app = builder.Build();
 
