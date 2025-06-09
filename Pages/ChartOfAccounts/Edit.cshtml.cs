@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,6 +9,7 @@ using System.Data;
 
 namespace AccMgt.Pages.ChartOfAccounts
 {
+    [Authorize(Roles = "Admin,Accountant")]
     public class EditModel : PageModel
     {
         private readonly IConfiguration _configuration;
